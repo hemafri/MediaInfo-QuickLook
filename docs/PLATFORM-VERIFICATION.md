@@ -36,7 +36,7 @@ The generated Xcode project passed plist syntax, object/source-reference, shared
 
 - Computer-use automation sent ordinary Space in Finder while the application was running and confirmed the system's native Quick Look. The disabled-shortcut and quit-state variants have not yet been checked.
 - The single-file HLG application UI successfully displayed and played the sample through `NativePlayerView`, the native AVPlayer view wrapper. The earlier SwiftUI `VideoPlayer` crashed at runtime while demangling a superclass in this older-SDK/newer-OS environment; replacing that wrapper resolved the observed playback crash. Successful playback does not establish correct HDR display output or Sony/Nikon camera compatibility.
-- A synthetic Option+Space sent through computer-use automation entered native full-screen Quick Look. Synthetic input is not evidence of physical global-hotkey delivery, so this does not establish whether the application's physical Option+Space callback works. A physical-keyboard test has been requested from the user and remains pending. Finder selection and TCC permission flows also remain unverified.
+- A synthetic Option+Space sent through computer-use automation entered native full-screen Quick Look. Synthetic input is not evidence of physical global-hotkey delivery, so this does not establish whether the application's physical Option+Space callback works. The subsequent physical-keyboard tests passed as confirmed by the user: first Automation grant opened the enhanced single-file preview, and selecting two files opened one batch window showing two items. Direct UI inspection corroborated two rows, 2/2 complete, zero failures. Denied/restored permission paths remain unverified.
 
 ## Implementation facts
 
@@ -57,13 +57,13 @@ The bare command-line probe has a different TCC identity from the final app. Tes
 
 Still pending acceptance:
 
-- Finder real selection reading and first-run, denied, restored Automation permissions.
-- Physical hotkey event delivery and configured alternative shortcuts. Deliberate exclusive registration conflict is now covered by the passing two-process check.
+- Denied and restored Automation permissions; real single/multiple Finder selection and first-run grant passed with the built app.
+- Configured alternative shortcuts; the default physical hotkey passed in single/multiple Finder selection. Deliberate exclusive registration conflict is now covered by the passing two-process check.
 - System Quick Look with ordinary Space after closing the enhanced preview, after disabling the shortcut, and after quitting. The app-running observation above covers only that state.
 - HDR display accuracy, real Sony/Nikon camera samples, and the full Developer ID signed/notarized release. Local ffprobe integration checks and the observed AVPlayer sample playback are narrower evidence.
 - Full Xcode builds and XCTest execution using the generated shared scheme.
 
-Stage 0 remains incomplete until real Finder selection, the Automation permission lifecycle, and physical shortcut activation are verified. Later-stage implementation and passing automated checks do not waive that acceptance gate.
+The core Finder-selection, first-grant, and physical-shortcut feasibility chain is now verified. The complete Automation permission lifecycle remains partially untested. Later-stage implementation and passing automated checks do not waive that acceptance gate.
 
 Do not reset TCC or alter the user's Finder selection to automate these checks. Use the application's open-file or drag-and-drop entry point when Finder automation is unavailable.
 
@@ -71,4 +71,4 @@ Do not reset TCC or alter the user's Finder selection to automate these checks. 
 
 After the user unlocked the desktop, Release GUI checks passed for PQ filtering, frame-rate sorting, double-click preview, Escape back to the table, selection/filter preservation, and horizontal scroll restoration (0.92206 before/after). A real save-panel CSV export was read back and contained BOM, header, and exactly the selected filter's one PQ record.
 
-The user identified Codex as the Option+Space conflict and explicitly requested changing Codex, preserving this application's default. The computer-control tool refuses access to Codex itself for safety reasons. Official manual shortcut-setting steps were provided; no alternate preference/file route was used to bypass that refusal. Physical Finder hotkey/TCC acceptance remains pending that external change.
+The user identified Codex as the Option+Space conflict and explicitly requested changing Codex, preserving this application's default. The computer-control tool refuses access to Codex itself for safety reasons. Official manual shortcut-setting steps were provided; no alternate preference/file route was used to bypass that refusal. The user confirmed completing the Codex shortcut change. With this application retaining Option+Space, the user then confirmed successful physical single-file activation, first Automation permission grant, and two-file batch activation. The final batch window was independently read through UI automation and showed the expected HLG and unknown rows, 2/2 complete, zero failures.
