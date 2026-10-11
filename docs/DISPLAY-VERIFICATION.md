@@ -18,4 +18,19 @@
 - 真实 Nikon MOV 的界面值：23.3 Mbps、1.0 s、5.3 MB；快门 1/3200 s、f/4、ISO 168 保留。仅本机读取，未提交素材、原片截图或私有路径。
 - 合成素材界面截图已更新，六项已移除，紧凑信息区与播放正常。原片核对后保留在应用内供继续使用。
 
-Xcode 和双架构 CI 结果将在运行完成后补充。
+## Xcode 与双架构 CI
+
+功能提交：`d8c75760336e455121487abe6180e66bbec818f9`。[完整 CI 运行](https://github.com/hemafri/MediaInfo-QuickLook/actions/runs/38148522491)，Apple Silicon / Intel 两个 job 均为 success。
+
+- 两种架构的 Xcode Debug 构建、XCTest（各 11 项，零失败）、Release 构建和签名校验通过。
+- 两种架构的 Swift Package XCTest（各 11 项，零失败）及 `scripts/check.sh` 全部通过。
+- 下载后检查 SHA-256 与 CI 记录一致，解压签名、二进制架构、版本 0.2.1 均通过。
+- 本机已更新 `dist/MediaInfo-QuickLook-macOS-arm64.zip` 与 `dist/MediaInfo-QuickLook-macOS-x86_64.zip`。通用文件名 ZIP 为本机 arm64 构建。
+- Intel 完整桌面交互仍未实测；本轮界面验证在本机 Apple Silicon 上完成。
+
+| 包 | SHA-256 |
+| --- | --- |
+
+| arm64 CI ZIP | `f63835b2557059893732c64155c2af613f05838e31474d26bb7a139a5a1f80ac` |
+| x86_64 CI ZIP | `4388236db35efe93e23b846bef76a3247b12fe73649ac3185b2dcf2602edd61f` |
+| 本机 arm64 ZIP | `e0b2d0bbcce01860f51d448a19bf0f8c804238b8ab9f191ad9431f6c7c95ede6` |

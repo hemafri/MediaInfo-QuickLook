@@ -1,6 +1,6 @@
 # GitHub macOS CI 验证记录
 
-本页保留 0.1.0 首次 CI 的历史证据；0.2.0 最新执行记录及安装包校验和见 [预览与相机参数验证](PREVIEW-CAMERA-VERIFICATION.md)。
+最新 0.2.1 执行记录见 [显示优化验证](DISPLAY-VERIFICATION.md)。本页保留 0.1.0 首次 CI 的历史证据；0.2.0 执行记录及安装包校验和见 [预览与相机参数验证](PREVIEW-CAMERA-VERIFICATION.md)。
 
 日期：2026-10-11。验证提交：`eb1c4af690c77cb2ea60a44244f0f8e7c46b85f5`。
 
