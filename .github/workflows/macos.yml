@@ -62,6 +62,10 @@ jobs:
           if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
             brew install ffmpeg
           fi
+          if ! command -v exiftool >/dev/null; then
+            brew install exiftool
+          fi
+          echo "EXIFTOOL=$(command -v exiftool)" >> "$GITHUB_ENV"
           echo "FFMPEG=$(command -v ffmpeg)" >> "$GITHUB_ENV"
           echo "FFPROBE=$(command -v ffprobe)" >> "$GITHUB_ENV"
       - name: Core, media, app-model and hotkey checks

@@ -10,3 +10,11 @@ mkdir -p "$OUT"
 "$FFMPEG" -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=320x180:rate=30:duration=0.3' -an -c:v libx264 -preset ultrafast -pix_fmt yuv420p "$OUT/中文 未标记.mov"
 printf 'this is not a valid video\n' > "$OUT/中文 损坏.mp4"
 printf 'Created four tagged/untagged synthetic videos and one corrupt file in %s\n' "$OUT"
+
+# Longer clip exercises actual autoplay/pause clocks; camera tags live outside batch200.
+"$FFMPEG" -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=320x180:rate=25:duration=4' -an -c:v libx264 -preset ultrafast -pix_fmt yuv420p .build/playback-validation.mp4
+exiftool_bin="${EXIFTOOL:-/opt/homebrew/bin/exiftool}"
+if [ -x "$exiftool_bin" ]; then
+  cp "$OUT/中文 SDR 8bit.mp4" .build/camera-tags.mp4
+  "$exiftool_bin" -overwrite_original -XMP-exif:ExposureTime=1/125 -XMP-exif:FNumber=4 -XMP-exif:ISO=640 .build/camera-tags.mp4
+fi

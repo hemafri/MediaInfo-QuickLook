@@ -91,6 +91,11 @@ struct MediaRow: Identifiable {
         let paths = custom.isEmpty ? ["/opt/homebrew/bin/ffprobe", "/usr/local/bin/ffprobe", "/usr/bin/ffprobe"] : [custom]
         return paths.first(where: { FileManager.default.isExecutableFile(atPath: $0) }).map { URL(fileURLWithPath: $0) }
     }
+    func cameraExecutable() -> URL? {
+        let custom = UserDefaults.standard.string(forKey: "exiftoolPath") ?? ""
+        let paths = custom.isEmpty ? ["/opt/homebrew/bin/exiftool", "/usr/local/bin/exiftool"] : [custom]
+        return paths.first(where: { FileManager.default.isExecutableFile(atPath: $0) }).map { URL(fileURLWithPath: $0) }
+    }
     func startScan() {
         guard let executableURL = executable() else {
             message = "未找到 ffprobe。请在设置中选择可执行文件；可先运行 brew install ffmpeg。"
@@ -100,7 +105,7 @@ struct MediaRow: Identifiable {
         let inputs = rows.map { ($0.id, $0.url) }
         let parallelism = min(4, max(2, UserDefaults.standard.object(forKey: "concurrency") as? Int ?? 3))
         NSLog("Starting metadata scan: %d files, concurrency %d", inputs.count, parallelism)
-        let service = ProbeService(executableURL: executableURL)
+        let service = ProbeService(executableURL: executableURL, cameraExecutableURL: cameraExecutable())
         let cache = cache
         scanTask = Task {
             await withTaskGroup(of: (UUID, MediaMetadata?, String?).self) { group in
@@ -109,7 +114,7 @@ struct MediaRow: Identifiable {
                     group.addTask {
                         do {
                             try Task.checkCancellation()
-                            if let hit = await cache.value(for: item.1) { return (item.0, hit, nil) }
+                            if let hit = await cache.value(for: item.1), hit.probeIdentity == service.cacheIdentity { return (item.0, hit, nil) }
                             let ticket = await cache.begin(for: item.1)
                             let metadata = try await service.probe(url: item.1)
                             try Task.checkCancellation()

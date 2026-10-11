@@ -93,10 +93,14 @@ struct SettingsView: View {
     @AppStorage("hotkeyModifiers") private var modifiers = 2048
     @AppStorage("concurrency") private var concurrency = 3
     @AppStorage("csvBOM") private var bom = true
+    @AppStorage("autoPlayPreview") private var autoPlay = true
+    @AppStorage("exiftoolPath") private var exiftoolPath = ""
     var body: some View {
-        Form {
+        ScrollView {
+        VStack(alignment: .leading, spacing: 12) {
             Text("分析全部在本机完成，不上传素材。").font(.headline)
             HStack {
+                Text("ffprobe 路径").frame(width: 100, alignment: .leading)
                 TextField("ffprobe 路径", text: $path, prompt: Text("自动查找 Homebrew"))
                 Button("选择…") {
                     let p = NSOpenPanel(); p.canChooseDirectories = false
@@ -104,14 +108,24 @@ struct SettingsView: View {
                 }
             }
             Text("未安装时：brew install ffmpeg。也可选择可信来源的 ffprobe 可执行文件；应用不内置该依赖。").font(.caption).foregroundStyle(.secondary)
+            HStack {
+                Text("ExifTool 路径").frame(width: 100, alignment: .leading)
+                TextField("ExifTool 路径", text: $exiftoolPath, prompt: Text("自动查找 Homebrew（可选）"))
+                Button("选择…") {
+                    let panel = NSOpenPanel(); panel.canChooseDirectories = false
+                    if panel.runModal() == .OK { exiftoolPath = panel.url?.path ?? "" }
+                }
+            }
+            Text("拍摄参数补充读取：brew install exiftool。路径改变后点击重新分析；缺失或读取失败不影响基础视频参数。未检出陀螺仪不能排除私有数据。").font(.caption).foregroundStyle(.secondary)
+            Toggle("预览视频自动播放", isOn: $autoPlay)
             Picker("并发分析", selection: $concurrency) { ForEach(2...4, id: \.self) { Text("\($0)").tag($0) } }
             HStack {
                 Picker("修饰键", selection: $modifiers) {
                     Text("⌥ Option").tag(2048); Text("⌃⌥ Control Option").tag(6144); Text("⌘⌥ Command Option").tag(2304); Text("⌃⇧ Control Shift").tag(4608)
-                }
+                }.frame(width: 260)
                 Picker("按键", selection: $keyCode) {
                     Text("Space").tag(49); Text("H").tag(4); Text("M").tag(46); Text("P").tag(35); Text("F6").tag(97); Text("F7").tag(98); Text("F8").tag(100)
-                }
+                }.frame(width: 150)
                 Button("应用快捷键") { delegate.enabled = true; delegate.configureHotkey() }
             }
             Text(delegate.hotkeyStatus).font(.caption)
@@ -122,7 +136,8 @@ struct SettingsView: View {
             Text("首次从 Finder 使用热键时，请允许控制 Finder。若拒绝：系统设置 → 隐私与安全性 → 自动化 → MediaInfo QuickLook → Finder。也可直接打开或拖放文件。").font(.callout)
             Button("打开自动化权限设置") { NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")!) }
             Text("本工具不注册单独的 Space，也不接管系统 Quick Look。HDR 分类依据编码流标签；Sony/Nikon 私有 Log 曲线可能无法识别。").font(.caption).foregroundStyle(.secondary)
-        }.padding(22).frame(width: 610)
+        }.padding(22)
+        }.frame(width: 650, height: 620)
     }
 }
 MainActor.assumeIsolated {

@@ -27,6 +27,7 @@
 				"21B7AD8BF9249B57CA40C9EF",
 				"A96FA1AFF0C246F4DACB6B84",
 				"6B1227FF7DD9B3BDEBAC2E98",
+				"F759BBCF5389BF251834E626",
 				"BD5A69795B16FED430B5BC43",
 			);
 			"runOnlyForDeploymentPostprocessing" = "0";
@@ -185,6 +186,7 @@
 				"4BC5174F0C429DDEC1003AC3",
 				"03389AF1521EFD71AB740A40",
 				"517AE94CA25C914D1CAC1233",
+				"C7F45697EE8385ECA84DC5C3",
 				"8037E8BE022D09C13F04720F",
 			);
 			"name" = "MediaInfoQuickLook";
@@ -329,6 +331,10 @@
 			"isa" = "PBXBuildFile";
 			"fileRef" = "2333C37938B0EA50B2988205";
 		};
+		"762673D52540A50EBA769E38" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "8DD525CC541A75C432F6042A";
+		};
 		"776F7209A00EB2D0FE24CF64" = {
 			"isa" = "XCConfigurationList";
 			"buildConfigurations" = (
@@ -395,6 +401,12 @@
 			"name" = "Embed Frameworks";
 			"runOnlyForDeploymentPostprocessing" = "0";
 		};
+		"8DD525CC541A75C432F6042A" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "Sources/MediaInfoCore/CameraCapture.swift";
+			"sourceTree" = "SOURCE_ROOT";
+		};
 		"8E53AAB3492AB59303D4270F" = {
 			"isa" = "PBXGroup";
 			"children" = (
@@ -421,6 +433,7 @@
 		"A01BF73678B93F410E14D8B0" = {
 			"isa" = "PBXGroup";
 			"children" = (
+				"8DD525CC541A75C432F6042A",
 				"52A5A15D191C3F4A0CFF518D",
 				"F9D8299851596CD0C1720DFE",
 				"22084397B1F201549835449B",
@@ -486,6 +499,12 @@
 			"path" = "MediaInfoCoreTests.xctest";
 			"sourceTree" = "BUILT_PRODUCTS_DIR";
 		};
+		"C7F45697EE8385ECA84DC5C3" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "Sources/MediaInfoQuickLook/PlaybackModel.swift";
+			"sourceTree" = "SOURCE_ROOT";
+		};
 		"D358B8D5FF6EE88451B6F574" = {
 			"isa" = "PBXNativeTarget";
 			"buildConfigurationList" = "198A8FF37163E7666E2FAFBD";
@@ -541,6 +560,7 @@
 			"isa" = "PBXSourcesBuildPhase";
 			"buildActionMask" = "2147483647";
 			"files" = (
+				"762673D52540A50EBA769E38",
 				"66A207DF2CB5BAD30D9C14D9",
 				"DE68261B68ABDFC56C952561",
 				"5EA3ECAEDD868F12760A538F",
@@ -568,6 +588,10 @@
 			"productName" = "MediaInfoCoreTests";
 			"productReference" = "BD8D23348A8CB0ED3ED7DB39";
 			"productType" = "com.apple.product-type.bundle.unit-test";
+		};
+		"F759BBCF5389BF251834E626" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "C7F45697EE8385ECA84DC5C3";
 		};
 		"F971CAB695F396E9FC2E0E70" = {
 			"isa" = "PBXFrameworksBuildPhase";

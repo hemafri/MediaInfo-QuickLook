@@ -65,31 +65,16 @@ struct ContentView: View {
 
 }
 
-@MainActor final class PlaybackModel: ObservableObject {
-    let player = AVPlayer()
-    @Published var status = "正在加载视频…"
-    private var observation: NSKeyValueObservation?
-    func load(_ url: URL) {
-        let item = AVPlayerItem(url: url)
-        observation = item.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
-            DispatchQueue.main.async {
-                switch item.status {
-                case .readyToPlay: self?.status = ""
-                case .failed: self?.status = "播放失败：\(item.error?.localizedDescription ?? "AVPlayer 不支持此文件")。元数据仍可查看。"
-                default: self?.status = "正在加载视频…"
-                }
-            }
-        }
-        player.replaceCurrentItem(with: item)
-    }
-    func stop() { player.pause(); observation = nil; player.replaceCurrentItem(with: nil) }
-}
 struct PreviewView: View {
     let row: MediaRow
     @StateObject private var playback = PlaybackModel()
+    @AppStorage("autoPlayPreview") private var autoPlay = true
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            NativePlayerView(player: playback.player).frame(minHeight: 220, idealHeight: 320)
+        GeometryReader { geometry in
+        VStack(alignment: .leading, spacing: 6) {
+            NativePlayerView(player: playback.player)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .layoutPriority(1)
             HStack {
                 Button("播放 / 暂停") { if playback.player.rate == 0 { playback.player.play() } else { playback.player.pause() } }
                 Button("静音 / 取消静音") { playback.player.isMuted.toggle() }
@@ -98,19 +83,27 @@ struct PreviewView: View {
             Text(row.url.path).font(.caption).textSelection(.enabled)
             if let m = row.metadata {
                 ScrollView {
-                    LazyVGrid(columns: [GridItem(.fixed(140), alignment: .leading), GridItem(.flexible(), alignment: .leading), GridItem(.fixed(100), alignment: .leading), GridItem(.flexible(), alignment: .leading)], alignment: .leading, spacing: 9) {
+                    LazyVGrid(columns: [GridItem(.fixed(140), alignment: .leading), GridItem(.flexible(), alignment: .leading), GridItem(.fixed(100), alignment: .leading), GridItem(.flexible(), alignment: .leading)], alignment: .leading, spacing: 4) {
                         ForEach(Array(fields(m).enumerated()), id: \.offset) { _, pair in
                             Text(pair.0).foregroundStyle(.secondary); Text(pair.1).textSelection(.enabled)
                         }
                     }
-                }.frame(minHeight: 170)
+                }.font(.callout)
+                // Previously the information area shared roughly half the available height.
+                // 20% is two fifths of that area; overflow remains accessible by scrolling.
+                .frame(height: max(68, geometry.size.height * 0.20))
+                .accessibilityLabel("视频与拍摄参数，可滚动")
                 if !m.warning.isEmpty { Text(m.warning).font(.caption).foregroundStyle(.orange) }
             } else { Text(row.error ?? row.state).textSelection(.enabled) }
             Text("根据视频文件标记识别；标签不能证明实际拍摄曲线或 HDR 显示准确性。").font(.caption).foregroundStyle(.secondary)
-        }.onAppear { playback.load(row.url) }.onDisappear { playback.stop() }
+        }.frame(width: geometry.size.width, height: geometry.size.height)
+        }
+        .onAppear { playback.load(row.url, autoPlay: autoPlay) }
+        .onChange(of: autoPlay) { playback.setAutoPlay($0) }
+        .onDisappear { playback.stop() }
     }
     private func fields(_ m: MediaMetadata) -> [(String, String)] {
-        [("HDR 分类", m.hdr.title), ("像素格式（原始）", m.rawPixelFormat), ("平均帧率（原始）", m.rawAverageFrameRate), ("标称帧率（原始）", m.rawNominalFrameRate), ("Transfer（原始）", m.transfer), ("Color primaries", m.primaries), ("Matrix", m.matrix), ("位深", m.bitDepth), ("色度采样", m.chroma), ("编码", m.codec), ("Profile", m.profile), ("分辨率", m.resolution), ("平均帧率", m.frameRate), ("码率", m.bitRate), ("时长", m.duration), ("容器", m.container), ("文件大小", m.fileSize), ("相机", m.camera)]
+        [("快门", m.capture?.shutter ?? "未知"), ("光圈", m.capture?.aperture ?? "未知"), ("ISO", m.capture?.iso ?? "未知"), ("陀螺仪数据", m.capture?.gyro ?? "未检出（不能排除）"), ("HDR 分类", m.hdr.title), ("像素格式（原始）", m.rawPixelFormat), ("平均帧率（原始）", m.rawAverageFrameRate), ("标称帧率（原始）", m.rawNominalFrameRate), ("Transfer（原始）", m.transfer), ("Color primaries", m.primaries), ("Matrix", m.matrix), ("位深", m.bitDepth), ("色度采样", m.chroma), ("编码", m.codec), ("Profile", m.profile), ("分辨率", m.resolution), ("平均帧率", m.frameRate), ("码率", m.bitRate), ("时长", m.duration), ("容器", m.container), ("文件大小", m.fileSize), ("相机", m.camera), ("拍摄参数来源", m.capture?.source.isEmpty == false ? m.capture!.source : "未检出"), ("拍摄参数说明", m.capture?.note ?? "")]
     }
 }
 

@@ -23,7 +23,7 @@ public enum MetadataError: LocalizedError {
         case .noVideo: return "文件中没有可分析的视频流。"
         case .invalidJSON: return "ffprobe 返回了无效的 JSON。"
         case .timedOut: return "分析超时。"
-        case .probeFailed(let detail): return "ffprobe 分析失败：\(detail)"
+        case .probeFailed(let detail): return "元数据分析失败：\(detail)"
         }
     }
 }
@@ -33,6 +33,8 @@ public struct MediaMetadata: Codable, Sendable {
     public var rawPixelFormat: String = "未知"
     public var rawAverageFrameRate: String = "未知"
     public var rawNominalFrameRate: String = "未知"
+    public var capture: CameraCapture?
+    public var probeIdentity: String?
     public var hdr: HDRKind
     public static func parse(data: Data) throws -> Self {
         guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw MetadataError.invalidJSON }
@@ -73,6 +75,10 @@ public struct MediaMetadata: Codable, Sendable {
         let normalized = Dictionary(tags.map { ($0.key.lowercased(), String(describing: $0.value)) }, uniquingKeysWith: { a, _ in a })
         let cameraParts = [makeKeys.compactMap { normalized[$0] }.first, modelKeys.compactMap { normalized[$0] }.first].compactMap { $0 }
         var result = Self(transfer: transfer, primaries: primaries, matrix: v("color_space"), bitDepth: depth, chroma: chroma, codec: v("codec_name"), profile: v("profile"), resolution: width != nil && height != nil ? "\(width!) × \(height!)" : "未知", frameRate: fps.map { String(format: "%.3f fps", locale: Locale(identifier: "en_US_POSIX"), $0) } ?? "未知", bitRate: (raw(video, "bit_rate") ?? raw(format, "bit_rate")).map { "\($0) bit/s" } ?? "未知", duration: (raw(video, "duration") ?? raw(format, "duration")).map { "\($0) s" } ?? "未知", container: raw(format, "format_name") ?? "未知", fileSize: raw(format, "size").map { "\($0) bytes" } ?? "未知", camera: cameraParts.isEmpty ? "未知" : cameraParts.joined(separator: " "), warning: [.hlg, .pq].contains(hdr) && primaries != "bt2020" ? "标签需核实：HDR transfer 与缺失或非常规 primaries。" : "", hdr: hdr)
+        var capture = CameraCapture()
+        capture.apply(tags: video["tags"] as? [String: Any] ?? [:], source: "ffprobe 视频流")
+        capture.apply(tags: format["tags"] as? [String: Any] ?? [:], source: "ffprobe 容器")
+        result.capture = capture
         result.rawPixelFormat = v("pix_fmt")
         result.rawAverageFrameRate = v("avg_frame_rate")
         result.rawNominalFrameRate = v("r_frame_rate")

@@ -18,7 +18,7 @@ public actor MetadataCache {
     private let storage: URL
     public init() {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
-        storage = support.appendingPathComponent("MediaInfoQuickLook/metadata-cache-v2.json")
+        storage = support.appendingPathComponent("MediaInfoQuickLook/metadata-cache-v3.json")
         entries = (try? JSONDecoder().decode([String: Entry].self, from: Data(contentsOf: storage))) ?? [:]
     }
     private func fingerprint(_ url: URL) -> (Int64, Date)? {

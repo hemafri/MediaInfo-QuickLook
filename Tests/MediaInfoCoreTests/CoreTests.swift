@@ -7,6 +7,31 @@ final class CoreTests: XCTestCase {
         {"streams":[{"codec_type":"video","color_transfer":"bt709","disposition":{"attached_pic":1}}, {"codec_type":"video","codec_name":"hevc","color_transfer":"\(transfer)","color_primaries":"bt2020","pix_fmt":"yuv420p10le","width":3840,"height":2160,"avg_frame_rate":"30000/1001"}],"format":{"duration":"12.5","size":"12345"}}
         """.utf8))
     }
+    func testCameraTagsAndGyroEvidence() throws {
+        let m = try MediaMetadata.parse(data: Data(#"{"streams":[{"codec_type":"video","tags":{"ExposureTime":"1/50","FNumber":"2.8","ISO":"800"}}],"format":{"tags":{"ISO":"100"}}}"#.utf8))
+        XCTAssertEqual(m.capture?.shutter, "1/50 s")
+        XCTAssertEqual(m.capture?.aperture, "f/2.8")
+        XCTAssertEqual(m.capture?.iso, "800")
+        XCTAssertEqual(m.capture?.gyro, "未检出（不能排除）")
+        var capture = CameraCapture()
+        capture.apply(tags: ["handler_name": "rtmd", "Accelerometer": "1 2 3", "GyroMode": "On", "Gyroscope": "Off"], source: "test")
+        XCTAssertEqual(capture.gyro, "未检出（不能排除）")
+        capture.apply(tags: ["QuickTime:AngularVelocity": "0 0 0"], source: "ExifTool")
+        XCTAssertEqual(capture.gyro, "有（检测到陀螺仪数据）")
+    }
+    func testCameraTimedChangesAndInvalidFields() {
+        var capture = CameraCapture()
+        capture.apply(tags: ["Track1:ExposureTime": "0.008", "Track1:FNumber": "f/4", "Track1:ISO": 640, "Track1:Copy1:ISO": 800], source: "ExifTool")
+        XCTAssertEqual(capture.shutter, "1/125 s")
+        XCTAssertEqual(capture.aperture, "f/4")
+        XCTAssertEqual(capture.iso, "变化：640 / 800")
+        var invalid = CameraCapture()
+        invalid.apply(tags: ["ExposureTime": "1/0", "FNumber": -2, "ISO": "nan", "Gyroscope": "", "HasGyro": false], source: "test")
+        XCTAssertEqual(invalid.shutter, "未知")
+        XCTAssertEqual(invalid.aperture, "未知")
+        XCTAssertEqual(invalid.iso, "未知")
+        XCTAssertEqual(invalid.gyro, "无（文件标记）")
+    }
     func testClassificationUsesOnlyKnownTransferTags() {
         XCTAssertEqual(HDRKind.classify("arib-std-b67"), .hlg)
         XCTAssertEqual(HDRKind.classify("smpte2084"), .pq)
