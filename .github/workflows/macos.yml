@@ -1,0 +1,88 @@
+name: macOS build and tests
+
+on:
+  push:
+    branches: [main, 'codex/**']
+    paths-ignore: ['docs/**', '**/*.md']
+  pull_request:
+    paths-ignore: ['docs/**', '**/*.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: macOS / ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Record toolchain
+        run: |
+          mkdir -p test-results
+          { sw_vers; uname -m; xcodebuild -version; swift --version; } | tee test-results/environment.txt
+      - name: Check generated project is current
+        run: |
+          python3 scripts/generate-xcode-project.py
+          git diff --exit-code -- MediaInfoQuickLook.xcodeproj
+      - name: Xcode Debug build and XCTest
+        run: |
+          set -o pipefail
+          xcodebuild -project MediaInfoQuickLook.xcodeproj -scheme MediaInfoQuickLook \
+            -configuration Debug -destination 'platform=macOS' -derivedDataPath DerivedData \
+            -resultBundlePath test-results/CoreTests.xcresult test 2>&1 | tee test-results/xcode-test.log
+      - name: Xcode Release build
+        run: |
+          set -o pipefail
+          xcodebuild -project MediaInfoQuickLook.xcodeproj -scheme MediaInfoQuickLook \
+            -configuration Release -destination 'platform=macOS' -derivedDataPath DerivedData \
+            build 2>&1 | tee test-results/xcode-release.log
+          codesign --verify --deep --strict DerivedData/Build/Products/Release/MediaInfoQuickLook.app
+      - name: Swift Package XCTest
+        run: |
+          set -o pipefail
+          swift test 2>&1 | tee test-results/swift-test.log
+      - name: Install media fixture tools
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            brew install ffmpeg
+          fi
+          echo "FFMPEG=$(command -v ffmpeg)" >> "$GITHUB_ENV"
+          echo "FFPROBE=$(command -v ffprobe)" >> "$GITHUB_ENV"
+      - name: Core, media, app-model and hotkey checks
+        run: |
+          set -o pipefail
+          scripts/check.sh 2>&1 | tee test-results/integration.log
+      - name: Package development app
+        run: |
+          set -o pipefail
+          scripts/build-app.sh release 2>&1 | tee test-results/package.log
+          shasum -a 256 dist/MediaInfo-QuickLook-macOS.zip > test-results/SHA256.txt
+      - name: Save test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-results-${{ matrix.arch }}
+          path: test-results/
+          retention-days: 14
+      - name: Save development app
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: MediaInfo-QuickLook-${{ matrix.arch }}
+          path: dist/MediaInfo-QuickLook-macOS.zip
+          retention-days: 14
