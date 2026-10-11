@@ -36,6 +36,26 @@ public struct MediaMetadata: Codable, Sendable {
     public var capture: CameraCapture?
     public var probeIdentity: String?
     public var hdr: HDRKind
+    // Preserve original precision for cache and sorting; round only for presentation.
+    public var bitRateValue: Double? { Self.quantity(bitRate) }
+    public var durationValue: Double? { Self.quantity(duration) }
+    public var displayBitRate: String { Self.scaled(bitRateValue, units: ["bps", "kbps", "Mbps", "Gbps", "Tbps"]) }
+    public var displayDuration: String {
+        durationValue.map { String(format: "%.1f s", locale: Locale(identifier: "en_US_POSIX"), $0) } ?? "未知"
+    }
+    public var displayFileSize: String { Self.scaled(Self.quantity(fileSize), units: ["B", "KB", "MB", "GB", "TB", "PB"]) }
+    private static func quantity(_ text: String) -> Double? {
+        guard let first = text.split(separator: " ").first, let value = Double(first), value.isFinite, value >= 0 else { return nil }
+        return value
+    }
+    private static func scaled(_ value: Double?, units: [String]) -> String {
+        guard var value else { return "未知" }
+        var index = 0
+        while value >= 999.95 && index < units.count - 1 { value /= 1_000; index += 1 }
+        var number = String(format: "%.1f", locale: Locale(identifier: "en_US_POSIX"), value)
+        if number.hasSuffix(".0") { number.removeLast(2) }
+        return "\(number) \(units[index])"
+    }
     public static func parse(data: Data) throws -> Self {
         guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw MetadataError.invalidJSON }
         let streams = root["streams"] as? [[String: Any]] ?? []

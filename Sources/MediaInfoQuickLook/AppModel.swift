@@ -44,8 +44,8 @@ struct MediaRow: Identifiable {
             let index = min(max(sortColumn, 0), ac.count - 1)
             let comparison: ComparisonResult
             if [4, 8, 9, 10].contains(index) {
-                let av = Double(ac[index].split(separator: " ").first.map(String.init) ?? "")
-                let bv = Double(bc[index].split(separator: " ").first.map(String.init) ?? "")
+                let av = index == 9 ? a.metadata?.bitRateValue : index == 10 ? a.metadata?.durationValue : Double(ac[index].split(separator: " ").first.map(String.init) ?? "")
+                let bv = index == 9 ? b.metadata?.bitRateValue : index == 10 ? b.metadata?.durationValue : Double(bc[index].split(separator: " ").first.map(String.init) ?? "")
                 if av == nil && bv != nil { return false }
                 if av != nil && bv == nil { return true }
                 if let av, let bv { comparison = av == bv ? .orderedSame : (av < bv ? .orderedAscending : .orderedDescending) }
@@ -57,7 +57,7 @@ struct MediaRow: Identifiable {
     }
     func cells(_ row: MediaRow) -> [String] {
         let m = row.metadata
-        return [row.url.lastPathComponent, m?.hdr.title ?? row.state, m?.transfer ?? "—", m?.primaries ?? "—", m?.bitDepth ?? "—", m?.chroma ?? "—", m?.codec ?? "—", m?.resolution ?? "—", m?.frameRate ?? "—", m?.bitRate ?? "—", m?.duration ?? "—", row.error ?? m?.warning ?? ""]
+        return [row.url.lastPathComponent, m?.hdr.title ?? row.state, m?.transfer ?? "—", m?.primaries ?? "—", m?.bitDepth ?? "—", m?.chroma ?? "—", m?.codec ?? "—", m?.resolution ?? "—", m?.frameRate ?? "—", m?.displayBitRate ?? "—", m?.displayDuration ?? "—", row.error ?? m?.warning ?? ""]
     }
     func openPanel() {
         let panel = NSOpenPanel(); panel.allowsMultipleSelection = true; panel.canChooseDirectories = false

@@ -24,6 +24,20 @@ import AppKit
         model.rows = [a, b]; model.sortColumn = 10; model.sortAscending = true
         guard model.visibleRows.first?.id == b.id else { print("FAIL: decimal duration sorting must use numeric values"); exit(1) }
         print("PASS: decimal duration sorting")
+        var roundedA = try metadata("1.14")
+        roundedA.bitRate = "2000000 bit/s"
+        var roundedB = try metadata("1.11")
+        roundedB.bitRate = "900000 bit/s"
+        let ra = MediaRow(url: a.url, metadata: roundedA)
+        let rb = MediaRow(url: b.url, metadata: roundedB)
+        model.rows = [ra, rb]
+        guard model.cells(ra)[10] == "1.1 s", model.cells(rb)[10] == "1.1 s", model.visibleRows.first?.id == rb.id else { throw CheckFailure.failed("rounded duration must preserve raw sorting") }
+        model.sortColumn = 9
+        guard model.cells(ra)[9] == "2 Mbps", model.cells(rb)[9] == "900 kbps", model.visibleRows.first?.id == rb.id else { throw CheckFailure.failed("scaled bitrate must preserve raw sorting") }
+        model.sortAscending = false
+        guard model.visibleRows.first?.id == ra.id else { throw CheckFailure.failed("descending scaled bitrate sorting") }
+        model.rows = [a, b]; model.sortColumn = 10; model.sortAscending = true
+        print("PASS: rounded duration and mixed bitrate units preserve numeric sorting")
         model.search = "a.mp4"
         guard model.visibleRows.count == 1 else { throw CheckFailure.failed("filename search") }
         model.search = ""; model.filter = "unknown"

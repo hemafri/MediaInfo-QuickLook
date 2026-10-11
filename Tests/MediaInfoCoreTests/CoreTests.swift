@@ -32,6 +32,23 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(invalid.iso, "未知")
         XCTAssertEqual(invalid.gyro, "无（文件标记）")
     }
+    func testReadableMediaQuantitiesInExport() throws {
+        let m = try MediaMetadata.parse(data: Data(#"{"streams":[{"codec_type":"video","bit_rate":"23333130","duration":"1.001"}],"format":{"size":"5305014"}}"#.utf8))
+        let cells = MetadataExport.cells(url: URL(fileURLWithPath: "/sample.mov"), metadata: m, error: nil)
+        XCTAssertEqual(cells[12], "23.3 Mbps")
+        XCTAssertEqual(cells[13], "1.0 s")
+        XCTAssertEqual(cells[15], "5.3 MB")
+        XCTAssertEqual(cells.count, MetadataExport.headers.count)
+        var values = m
+        values.bitRate = "999999 bit/s"; values.fileSize = "0 bytes"; values.duration = "12.56 s"
+        XCTAssertEqual(values.displayBitRate, "1 Mbps")
+        XCTAssertEqual(values.displayFileSize, "0 B")
+        XCTAssertEqual(values.displayDuration, "12.6 s")
+        values.bitRate = "nan bit/s"; values.fileSize = "-1 bytes"; values.duration = "未知"
+        XCTAssertEqual(values.displayBitRate, "未知")
+        XCTAssertEqual(values.displayFileSize, "未知")
+        XCTAssertEqual(values.displayDuration, "未知")
+    }
     func testClassificationUsesOnlyKnownTransferTags() {
         XCTAssertEqual(HDRKind.classify("arib-std-b67"), .hlg)
         XCTAssertEqual(HDRKind.classify("smpte2084"), .pq)

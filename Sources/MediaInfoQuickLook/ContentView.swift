@@ -103,7 +103,7 @@ struct PreviewView: View {
         .onDisappear { playback.stop() }
     }
     private func fields(_ m: MediaMetadata) -> [(String, String)] {
-        [("快门", m.capture?.shutter ?? "未知"), ("光圈", m.capture?.aperture ?? "未知"), ("ISO", m.capture?.iso ?? "未知"), ("陀螺仪数据", m.capture?.gyro ?? "未检出（不能排除）"), ("HDR 分类", m.hdr.title), ("像素格式（原始）", m.rawPixelFormat), ("平均帧率（原始）", m.rawAverageFrameRate), ("标称帧率（原始）", m.rawNominalFrameRate), ("Transfer（原始）", m.transfer), ("Color primaries", m.primaries), ("Matrix", m.matrix), ("位深", m.bitDepth), ("色度采样", m.chroma), ("编码", m.codec), ("Profile", m.profile), ("分辨率", m.resolution), ("平均帧率", m.frameRate), ("码率", m.bitRate), ("时长", m.duration), ("容器", m.container), ("文件大小", m.fileSize), ("相机", m.camera), ("拍摄参数来源", m.capture?.source.isEmpty == false ? m.capture!.source : "未检出"), ("拍摄参数说明", m.capture?.note ?? "")]
+        [("快门", m.capture?.shutter ?? "未知"), ("光圈", m.capture?.aperture ?? "未知"), ("ISO", m.capture?.iso ?? "未知"), ("陀螺仪数据", m.capture?.gyro ?? "未检出（不能排除）"), ("HDR 分类", m.hdr.title), ("Color primaries", m.primaries), ("Matrix", m.matrix), ("位深", m.bitDepth), ("色度采样", m.chroma), ("编码", m.codec), ("Profile", m.profile), ("分辨率", m.resolution), ("平均帧率", m.frameRate), ("码率", m.displayBitRate), ("时长", m.displayDuration), ("容器", m.container), ("文件大小", m.displayFileSize), ("相机", m.camera)]
     }
 }
 

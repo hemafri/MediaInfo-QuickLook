@@ -22,6 +22,15 @@ import Foundation
         do { _ = try MediaMetadata.parse(data: Data(#"{"streams":[{"codec_type":"audio"}]}"#.utf8)); fatalError("Expected noVideo") } catch MetadataError.noVideo {}
         require(MetadataExport.csv(rows: [["a,b", "c\"d", "中文\nx"]], bom: false) == "\"a,b\",\"c\"\"d\",\"中文\nx\"\r\n", "CSV escaping")
         require(MetadataExport.tsv(rows: [["a\tb", "x\ny"]]) == "\"a\tb\"\t\"x\ny\"\r\n", "TSV escaping")
+        let readable = try MediaMetadata.parse(data: Data(#"{"streams":[{"codec_type":"video","bit_rate":"23333130","duration":"1.001"}],"format":{"size":"5305014"}}"#.utf8))
+        let readableCells = MetadataExport.cells(url: URL(fileURLWithPath: "/sample.mov"), metadata: readable, error: nil)
+        require(readableCells[12] == "23.3 Mbps" && readableCells[13] == "1.0 s" && readableCells[15] == "5.3 MB", "Readable bitrate, one-decimal duration and file size")
+        require(readableCells.count == MetadataExport.headers.count, "Export columns align")
+        var values = readable
+        values.bitRate = "999999 bit/s"; values.fileSize = "0 bytes"; values.duration = "12.56 s"
+        require(values.displayBitRate == "1 Mbps" && values.displayFileSize == "0 B" && values.displayDuration == "12.6 s", "Quantity boundaries and rounding")
+        values.bitRate = "nan bit/s"; values.fileSize = "-1 bytes"; values.duration = "未知"
+        require(values.displayBitRate == "未知" && values.displayFileSize == "未知" && values.displayDuration == "未知", "Invalid quantities remain unknown")
         let path = FileManager.default.temporaryDirectory.appendingPathComponent("中文 ' \" ; $(touch nope) " + UUID().uuidString)
         try Data("a".utf8).write(to: path)
         defer { try? FileManager.default.removeItem(at: path) }
