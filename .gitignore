@@ -6,3 +6,11 @@
 .env
 .env.*
 !.env.example
+
+# Build and generated test artifacts
+.build/
+dist/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.superpowers/
