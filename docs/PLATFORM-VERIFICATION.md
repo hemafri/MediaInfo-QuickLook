@@ -1,5 +1,7 @@
 # macOS integration verification
 
+This page records the initial integration history. Later user acceptance of real-camera/HDR display and the 0.2.0 preview/camera work are recorded in [PREVIEW-CAMERA-VERIFICATION.md](PREVIEW-CAMERA-VERIFICATION.md).
+
 Verified on the development Mac on 2026-10-11. These checks do not constitute the complete stage-0 acceptance gate in HANDOFF.md.
 
 ## Checks actually run

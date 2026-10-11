@@ -1,5 +1,7 @@
 # GitHub macOS CI 验证记录
 
+本页保留 0.1.0 首次 CI 的历史证据；0.2.0 最新执行记录及安装包校验和见 [预览与相机参数验证](PREVIEW-CAMERA-VERIFICATION.md)。
+
 日期：2026-10-11。验证提交：`eb1c4af690c77cb2ea60a44244f0f8e7c46b85f5`。
 
 [完整运行及下载产物](https://github.com/hemafri/MediaInfo-QuickLook/actions/runs/38140707415)。工作流定义在 `.github/workflows/macos.yml`，代码推送和 PR 自动运行，文档变更不重复触发。
