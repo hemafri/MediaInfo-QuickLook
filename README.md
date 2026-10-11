@@ -4,11 +4,19 @@
 
 当前交付：**0.1.0 开发版**，已有实际运行的 Apple Silicon `.app`。不是已公证的正式发行版。功能和测试边界见 [测试结果](docs/TEST-RESULTS.md) 与 [验收清单](docs/ACCEPTANCE.md)。
 
+## 界面示例
+
+以下为真实运行窗口，素材由测试脚本合成；截图不构成 HDR 色彩校准证据。
+
+![单文件 HLG 预览](docs/screenshots/single-hlg.png)
+
+![MP4 与 MOV 批量参数](docs/screenshots/batch.png)
+
 ## 安装与首次使用
 
-最低目标 macOS 13；本次实际测试为 macOS 27.0.1 / Apple Silicon。其他系统与 Intel 构建尚未实测。
+最低目标 macOS 13；本次实际测试为 macOS 27.0.1 / Apple Silicon。GitHub CI 已在 macOS 15.7.9 上通过 arm64/Intel 构建、XCTest 与媒体集成测试；macOS 13 和 Intel 完整桌面交互尚未实测。
 
-1. 解压 `dist/MediaInfo-QuickLook-macOS.zip`，将 `MediaInfo QuickLook.app` 拖到“应用程序”。也可直接运行 `dist` 中的应用。
+1. 本机测试包为 `dist/MediaInfo-QuickLook-macOS.zip`；另提供 CI 构建的 `-arm64.zip`（Apple Silicon）与 `-x86_64.zip`（Intel），选择对应架构。解压后，将 `MediaInfo QuickLook.app` 拖到“应用程序”。也可直接运行 `dist` 中的应用。
 2. 安装可信来源的 `ffprobe`。已有 Homebrew 时运行 `brew install ffmpeg`。应用自动查找 `/opt/homebrew/bin/ffprobe`、`/usr/local/bin/ffprobe`；其他位置在菜单栏 → 设置中选择。**没有内置 ffprobe，也不会替你下载或执行安装器。**
 3. 启动后点击菜单栏胶片图标 → 打开窗口；选择“打开文件…”或把视频拖入窗口。
 4. 从 Finder 触发：保持 Finder 在前台并选择视频，按 `Option+Space`。首次允许应用控制 Finder；若拒绝，可继续使用打开文件或拖放入口。权限设置位于“系统设置 → 隐私与安全性 → 自动化 → MediaInfo QuickLook → Finder”。
@@ -64,6 +72,14 @@ swift test
 `check.sh` 实际编译并运行独立 Swift 断言程序，生成 HLG/PQ/SDR/未知测试视频、200 个文件副本及损坏文件，验证解析、导出、缓存、超时/取消、AVPlayer 播放时钟与应用扫描模型。需要 ffmpeg/ffprobe；`FFMPEG`、`FFPROBE` 可覆盖测试二进制路径。合成素材位于 `.build/fixtures`；测试会更新这一区域，并清理应用元数据缓存，不修改用户素材。合成测试不能代替 Sony/Nikon 原片与 HDR 显示验收。
 
 详细执行证据：[核心测试](docs/CORE-VERIFICATION.md)、[系统集成](docs/PLATFORM-VERIFICATION.md)、[本次交付结果](docs/TEST-RESULTS.md)。
+
+## 持续集成
+
+[macOS 构建与测试](https://github.com/hemafri/MediaInfo-QuickLook/actions/workflows/macos.yml) 在 Apple Silicon 与 Intel macOS runner 上分别执行 Xcode Debug/XCTest、Xcode Release、Swift Package XCTest 和合成媒体集成检查。推送代码和 Pull Request 自动触发，也可手动运行。每次保存工具链版本、测试日志、xcresult 以及对应架构的 ad-hoc 开发包，保留 14 天。下载 Actions 产物需要登录 GitHub。
+
+首次双架构运行已通过，具体版本、测试结果及包校验和见 [CI 验证记录](docs/CI-VERIFICATION.md)。
+
+CI 使用合成素材，不读取或上传用户视频；不能替代 Finder/TCC、HDR 显示及相机原片验收。ZIP 仍需另行配置 ffprobe。
 
 ## 发布准备
 

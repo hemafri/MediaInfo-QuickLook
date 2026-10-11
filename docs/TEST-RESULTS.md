@@ -9,12 +9,12 @@
 - 实际 `.app` 已启动，菜单栏应用、窗口、原生批量表格、单文件参数和 HLG 播放画面已观察。
 - `codesign --verify --deep --strict` 通过，本地 ad-hoc + hardened runtime + Automation entitlement。ZIP 为 arm64，不含 ffprobe。
 - 已生成并检查 Xcode app/Core framework/XCTest targets、共享 scheme、Debug/Release、依赖与源码引用；`plutil` 通过，生成结果确定。
-- **未执行成功的项目**：`xcodebuild -version/-list` 被环境拒绝（只有 Command Line Tools）；`swift test` 报 `no such module XCTest`。不能称 Xcode 构建或 XCTest 已通过。
+- **未执行成功的项目**：`xcodebuild -version/-list` 被环境拒绝（只有 Command Line Tools）；`swift test` 报 `no such module XCTest`。这仅描述本机初次验证；后续 GitHub CI 已补齐 Xcode/XCTest 证据，见 [CI 验证记录](CI-VERIFICATION.md)。
 - 系统签名身份列表未发现 Developer ID Application。没有使用其他用途的分发证书；未执行公证、staple 或异机 Gatekeeper 验证。
 
 ## 自动化执行结果
 
-统一命令：`scripts/check.sh`，最后一次完整运行成功。
+统一命令：`scripts/check.sh`，2026-10-11 继续工作时完整复跑成功。GitHub CI 的 arm64 和 x86_64 也均通过 Xcode Debug/Release、XCTest（各 8 项、0 失败）、Swift Package XCTest 和相同媒体集成检查，见 [CI 验证记录](CI-VERIFICATION.md)。
 
 | 验证 | 实际结果 |
 | --- | --- |
@@ -24,7 +24,7 @@
 | 缓存 | 跨实例持久化、大小/mtime 失效、文件变化 ticket 拒绝、清除 epoch 拒绝通过 |
 | 子进程 | 大 stderr 不堵塞、超时、忽略 SIGTERM 的进程取消后被 SIGKILL 并回收通过 |
 | 实际 MP4/MOV | HLG/PQ 10bit、SDR 8bit、缺失 transfer 样本解析通过 |
-| 200 文件 + 1 损坏 | 200 成功、1 独立失败；并发 3；本次完整运行 1.503 秒，各有效类型 50 个 |
+| 200 文件 + 1 损坏 | 200 成功、1 独立失败；并发 3；本机后续完整运行 1.415 秒，各有效类型 50 个 |
 | AVFoundation | 四种样本均 readyToPlay，播放时钟推进；不据此声称视觉 HDR 正确 |
 | 应用扫描模型 | 先显示 201 个文件名、增量进度、错误隔离、统计、目录跳过通过 |
 | 应用状态回归 | 取消刷新不重启、取消扫描、快速重选不被旧结果覆盖、数值小数排序、文件名搜索、未知筛选通过 |
@@ -50,7 +50,9 @@
 - 用户实际在 Finder 单选视频并按 Option+Space，确认出现 Automation 授权框，允许后打开增强预览。随后多选两个视频再次实际按键，确认进入同一个批量窗口并显示“共 2 个”。桌面自动化随后读取真实窗口，核对 HLG 与未知两行、2/2 完成、0 失败。物理按键及首次允许依据为用户确认，列表内容另有直接界面读取证据。
 - 实际拖放、表格软件粘贴、列偏好重启恢复及完整快捷键矩阵仍需交互验收。
 
-截图已在开发对话工具结果中展示，仓库未保存可识别用户其他窗口的桌面截图。
+2026-10-11 继续验收：Esc 关闭增强窗口后，在 Finder 选中 HLG 文件按普通 Space，再次读取到系统“快速查看”窗口和 HDR 标识。随后桌面工具连接超时，停用热键与退出状态尚未取得新证据。
+
+真实应用窗口截图已保存至 [单文件预览](screenshots/single-hlg.png) 与 [批量窗口](screenshots/batch.png)，仅包含合成测试素材与本项目路径，没有截取其他应用窗口。批量截图及界面读取确认双选组合是 HLG MP4 + 未标记 MOV。
 
 ## 本次发现并修复
 
@@ -63,7 +65,7 @@
 ## 未通过完整验收的外部条件
 
 - Finder 首次允许与物理热键单/多选已通过；拒绝、重新允许，以及退出/停用后的 Quick Look 行为仍需验证。
-- 需要完整 Xcode 验证 xcodebuild / XCTest targets。
+- 本机缺少完整 Xcode；GitHub CI 已补齐 Xcode/XCTest 验证，详见 CI 验证记录。
 - 需要 Sony、Nikon 原片及拍摄参数确认相机私有 metadata 边界。
 - 需要已知支持 HDR 的显示设备实际验证亮度、色彩与系统 HDR 输出。
 - 需要外接盘/权限拒绝/大文件及持续批量操作的交互验证。

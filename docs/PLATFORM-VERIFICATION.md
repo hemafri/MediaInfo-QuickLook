@@ -24,13 +24,13 @@ Resources/Info.plist: OK
 Resources/MediaInfoQuickLook.entitlements: OK
 ```
 
-This demonstrates successful Carbon registration and re-registration after releasing the combination in this environment. It does not demonstrate delivery of a physical keypress or absence of conflicts on another Mac. `unregister()` invokes Carbon cleanup; the re-registration is its practical check. Intel compilation and operation on macOS 13 itself were not tested.
+This demonstrates successful Carbon registration and re-registration after releasing the combination in this environment. It does not demonstrate delivery of a physical keypress or absence of conflicts on another Mac. `unregister()` invokes Carbon cleanup; the re-registration is its practical check. Subsequent CI verified Intel compilation/tests on macOS 15.7.9; operation on macOS 13 itself remains untested.
 
 The full `scripts/check.sh` subsequently passed on this development Mac. It runs the Swift package build, standalone core checks, generated-media integration checks, application-model checks, the two-process hotkey conflict check, and plist validation. These successful checks do not replace the outstanding interactive acceptance cases below.
 
 `scripts/hotkey-conflict-check.swift` starts a separate process that exclusively holds a test shortcut and verifies that production registration reports a conflict. The initial nonexclusive production registration incorrectly succeeded in this test. Changing registration to pass `UInt32(kEventHotKeyExclusive)` fixed the failure; the conflict check and bare-Space rejection both now pass. This is a real cross-process conflict test, not a mocked return code.
 
-The generated Xcode project passed plist syntax, object/source-reference, shared-scheme XML, and deterministic-regeneration checks. `xcodebuild -list -project MediaInfoQuickLook.xcodeproj` was attempted but failed because the active developer directory is `/Library/Developer/CommandLineTools`, not a full Xcode installation. Xcode app builds and its XCTest scheme remain unverified.
+The generated Xcode project passed plist syntax, object/source-reference, shared-scheme XML, and deterministic-regeneration checks. `xcodebuild -list -project MediaInfoQuickLook.xcodeproj` was attempted but failed because the active developer directory is `/Library/Developer/CommandLineTools`, not a full Xcode installation. Local Xcode execution remains unavailable; subsequent GitHub CI ran Xcode app builds and XCTest successfully on arm64 and x86_64. See [CI-VERIFICATION.md](CI-VERIFICATION.md).
 
 ## Interactive observations
 
@@ -61,7 +61,7 @@ Still pending acceptance:
 - Configured alternative shortcuts; the default physical hotkey passed in single/multiple Finder selection. Deliberate exclusive registration conflict is now covered by the passing two-process check.
 - System Quick Look with ordinary Space after closing the enhanced preview, after disabling the shortcut, and after quitting. The app-running observation above covers only that state.
 - HDR display accuracy, real Sony/Nikon camera samples, and the full Developer ID signed/notarized release. Local ffprobe integration checks and the observed AVPlayer sample playback are narrower evidence.
-- Full Xcode builds and XCTest execution using the generated shared scheme.
+- Local full-Xcode execution is unavailable; cloud Xcode builds/XCTest have now passed (see CI-VERIFICATION.md).
 
 The core Finder-selection, first-grant, and physical-shortcut feasibility chain is now verified. The complete Automation permission lifecycle remains partially untested. Later-stage implementation and passing automated checks do not waive that acceptance gate.
 
